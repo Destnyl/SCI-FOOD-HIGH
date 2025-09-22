@@ -1,0 +1,24 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --color-maroon: #701A2E;
+  --color-amber: #F29C38;
+  --color-burnt: #D94F1D;
+  --color-pink: #F8CBD0;
+  --color-peach: #FDE7C9;
+  --color-coral: #F9B8AE;
+  --font-poppins: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-gilroy: "Gilroy", "Manrope", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-gilroy);
+    background-color: var(--color-peach);
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-poppins);
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "scifood-high",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.18",
+    "firebase": "^12.2.1",
+    "pinia": "^3.0.3",
+    "uuid": "^13.0.0",
+    "@pinia/nuxt": "^0.5.5",
+    "nuxt": "^3.14.0"
+  },
+  "devDependencies": {
+    "@nuxtjs/tailwindcss": "^6.13.1",
+    "@tailwindcss/forms": "^0.5.10",
+    "@tailwindcss/typography": "^0.5.16",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.0",
+    "typescript": "~5.8.3"
+  }
+}

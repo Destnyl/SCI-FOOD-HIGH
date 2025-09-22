@@ -1,0 +1,6 @@
+For student:
+Email: student1@scifood.local
+Password: studentpass
+For staff:
+Email: staff1@scifood.local
+Password: staffpass
