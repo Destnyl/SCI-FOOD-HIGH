@@ -34,7 +34,7 @@ onMounted(() => {
             alt="School Logo"
             class="w-8 h-8 rounded-full"
           />
-          SCI-FOOD-HIGH
+          <span class="hidden sm:inline">SCI-FOOD-HIGH</span>
         </NuxtLink>
         <nav class="flex items-center gap-6">
           <!-- Dashboard Button -->
