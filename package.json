@@ -11,12 +11,13 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@pinia/nuxt": "^0.5.5",
+    "cloudinary": "^2.7.0",
     "dayjs": "^1.11.18",
     "firebase": "^12.2.1",
+    "nuxt": "^3.14.0",
     "pinia": "^3.0.3",
-    "uuid": "^13.0.0",
-    "@pinia/nuxt": "^0.5.5",
-    "nuxt": "^3.14.0"
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@nuxtjs/tailwindcss": "^6.13.1",

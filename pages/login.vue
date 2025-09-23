@@ -7,7 +7,9 @@ useHead({
 const role = ref<"student" | "staff">("student");
 const identifier = ref("");
 const password = ref("");
+
 const isLoading = ref(false);
+const errorMessage = ref("");
 
 const auth = useAuthStore();
 const route = useRoute();
@@ -26,7 +28,11 @@ watchEffect(() => {
 });
 
 async function login() {
-  if (!identifier.value || !password.value) return;
+  errorMessage.value = "";
+  if (!identifier.value || !password.value) {
+    errorMessage.value = "Please enter both identifier and password.";
+    return;
+  }
   try {
     isLoading.value = true;
     await auth.loginWithCredentials(
@@ -38,6 +44,22 @@ async function login() {
       (route.query.redirect as string) ||
       (role.value === "staff" ? "/staff" : "/student");
     await navigateTo(redirect);
+  } catch (err: any) {
+    // Always show a user-friendly message for invalid credentials
+    if (
+      err.code === "auth/user-not-found" ||
+      err.code === "auth/wrong-password" ||
+      err.code === "auth/invalid-credential"
+    ) {
+      errorMessage.value =
+        role.value === "student"
+          ? "Invalid Reference Number or Password."
+          : "Invalid Staff Name or Password.";
+    } else if (err.code === "auth/too-many-requests") {
+      errorMessage.value = "Too many failed attempts. Please try again later.";
+    } else {
+      errorMessage.value = "Login failed. Please try again.";
+    }
   } finally {
     isLoading.value = false;
   }
@@ -153,6 +175,9 @@ async function login() {
           </svg>
         </div>
       </div>
+    </div>
+    <div v-if="errorMessage" class="mb-4 text-red-600 text-sm text-center">
+      {{ errorMessage }}
     </div>
     <button
       :disabled="isLoading || !identifier || !password"

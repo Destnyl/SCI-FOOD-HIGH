@@ -1,6 +1,13 @@
-import { writeFile } from 'fs/promises'
-import { join } from 'path'
-import { v4 as uuidv4 } from 'uuid'
+
+import { v2 as cloudinary } from 'cloudinary'
+import type { UploadApiErrorResponse, UploadApiResponse } from 'cloudinary'
+
+// Configure Cloudinary (use environment variables in production)
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'YOUR_CLOUD_NAME',
+  api_key: process.env.CLOUDINARY_API_KEY || 'YOUR_API_KEY',
+  api_secret: process.env.CLOUDINARY_API_SECRET || 'YOUR_API_SECRET',
+})
 
 export default defineEventHandler(async (event) => {
   try {
@@ -22,41 +29,33 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Generate unique filename
-    const fileExtension = file.filename.split('.').pop()
-    const uniqueFilename = `${uuidv4()}.${fileExtension}`
-    
-    // Create uploads directory in public folder
-    const uploadsDir = join(process.cwd(), 'public', 'uploads')
-    const filePath = join(uploadsDir, uniqueFilename)
-    
-    // Ensure uploads directory exists
-    try {
-      await $fetch('/api/ensure-dir', {
-        method: 'POST',
-        body: { dir: uploadsDir }
-      })
-    } catch (error) {
-      // If the ensure-dir endpoint doesn't exist, we'll create it
-      const { mkdir } = await import('fs/promises')
-      try {
-        await mkdir(uploadsDir, { recursive: true })
-      } catch (mkdirError) {
-        console.log('Directory might already exist:', mkdirError)
-      }
-    }
-    
-    // Write file
-    await writeFile(filePath, file.data)
-    
-    // Return the public URL
-    const imageUrl = `/uploads/${uniqueFilename}`
-    
+    // Upload buffer to Cloudinary using a Promise
+    const uploadToCloudinary = (buffer: Buffer) => {
+      return new Promise<{ secure_url: string; public_id: string }>((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            folder: 'sci-food-high',
+            resource_type: 'image',
+          },
+          (error: UploadApiErrorResponse | undefined, result: UploadApiResponse | undefined) => {
+            if (error || !result) {
+              reject(error || new Error('Cloudinary upload failed'));
+            } else {
+              resolve({ secure_url: result.secure_url, public_id: result.public_id });
+            }
+          }
+        );
+        stream.end(buffer);
+      });
+    };
+
+    const result = await uploadToCloudinary(file.data);
+
     return {
       success: true,
-      imageUrl,
-      filename: uniqueFilename
-    }
+      imageUrl: result.secure_url,
+      filename: result.public_id,
+    };
     
   } catch (error) {
     console.error('Upload error:', error)
