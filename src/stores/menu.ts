@@ -39,8 +39,28 @@ export const useMenuStore = defineStore('menu', {
       if (imageUrl) docData.imageUrl = imageUrl
       await addDoc(collection(db, 'menu'), docData)
     },
+    
     async removeItem(id: string) {
-      await deleteDoc(doc(db, 'menu', id))
+      // Find the menu item to get its imageUrl
+      const item = this.items.find((i) => i.id === id)
+      if (item && item.imageUrl) {
+        try {
+          // Extract Cloudinary public_id from imageUrl
+          const urlParts = item.imageUrl.split('/');
+          const uploadIdx = urlParts.findIndex((p) => p === 'upload');
+          let publicId = urlParts.slice(uploadIdx + 1).join('/');
+          publicId = publicId.replace(/\.[^.]+$/, '');
+
+          // Call server API to delete image from Cloudinary
+          await $fetch('/api/delete-image', {
+            method: 'POST',
+            body: { publicId },
+          });
+        } catch (e) {
+          console.warn('Failed to delete image from Cloudinary:', e);
+        }
+      }
+      await deleteDoc(doc(db, 'menu', id));
     },
   },
 })
