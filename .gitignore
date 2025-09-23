@@ -28,7 +28,3 @@ dist-ssr
 .nuxt
 .nitro
 .cache
-
-# Uploaded files
-public/uploads/*
-!public/uploads/.gitkeep
