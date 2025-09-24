@@ -119,13 +119,13 @@ async function login() {
     </div>
     <div class="mb-4">
       <label class="block text-sm font-semibold text-gray-700 mb-2">{{
-        role === "student" ? "Learners Reference Number (LRN)" : "Staff Name"
+        role === "student" ? "Learners Reference Number (LRN)" : "Username"
       }}</label>
       <div class="relative">
         <input
           class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-maroon focus:ring-4 focus:ring-maroon/10 transition-all duration-200 outline-none"
           v-model="identifier"
-          :placeholder="`Enter ${role === 'student' ? 'LRN' : 'Name'}`"
+          :placeholder="`Enter ${role === 'student' ? 'LRN' : 'Username'}`"
         />
         <div
           class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"

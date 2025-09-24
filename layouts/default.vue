@@ -24,23 +24,6 @@ onMounted(() => auth.init());
           />
           <span class="hidden sm:inline">SCI-FOOD-HIGH</span>
         </NuxtLink>
-        <nav class="flex items-center gap-4">
-          <NuxtLink class="hover:text-burnt" to="/student">Student</NuxtLink>
-          <NuxtLink class="hover:text-burnt" to="/staff">Staff</NuxtLink>
-          <NuxtLink
-            v-if="!auth.isAuthenticated"
-            class="px-3 py-1 rounded bg-maroon text-white"
-            to="/login"
-            >Login</NuxtLink
-          >
-          <button
-            v-else
-            class="px-3 py-1 rounded bg-burnt text-white"
-            @click="auth.logout()"
-          >
-            Logout
-          </button>
-        </nav>
       </div>
     </header>
     <main class="max-w-6xl mx-auto px-4 py-6">
