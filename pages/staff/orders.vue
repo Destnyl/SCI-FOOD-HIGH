@@ -5,6 +5,8 @@ definePageMeta({
 });
 
 const orders = useOrdersStore();
+const menu = useMenuStore();
+onMounted(() => menu.init());
 const selectedStatus = ref<null | string>(null);
 
 function toggleStatusFilter(status: null | string) {
@@ -468,6 +470,11 @@ onMounted(async () => {
                   }"
                 ></div>
                 <span class="font-medium text-gray-800">{{ item.name }}</span>
+                <span class="text-xs text-gray-500">
+                  ₱{{
+                    menu.items.find((m) => m.id === item.id)?.price ?? "N/A"
+                  }}
+                </span>
               </div>
               <span class="text-sm text-gray-600"
                 >Qty: {{ item.quantity }}</span
@@ -488,6 +495,16 @@ onMounted(async () => {
               >
                 {{ o.items.reduce((sum, item) => sum + item.quantity, 0) }}
                 items
+              </span>
+              <span class="ml-6 font-semibold text-gray-800">Total Price:</span>
+              <span class="text-xl font-bold text-green-700">
+                ₱{{
+                  o.items.reduce((sum, item) => {
+                    const price =
+                      menu.items.find((m) => m.id === item.id)?.price ?? 0;
+                    return sum + price * item.quantity;
+                  }, 0)
+                }}
               </span>
             </div>
           </div>

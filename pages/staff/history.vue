@@ -5,6 +5,9 @@ definePageMeta({
 });
 
 const orders = useOrdersStore();
+import { useMenuStore } from "~/stores/menu";
+const menu = useMenuStore();
+onMounted(() => menu.init());
 onMounted(() => orders.initStaff());
 </script>
 
@@ -30,9 +33,21 @@ onMounted(() => orders.initStaff());
         </div>
         <ul class="mt-2 list-disc list-inside text-sm">
           <li v-for="li in o.items" :key="li.id">
-            {{ li.name }} x{{ li.quantity }}
+            {{ li.name }} - ₱{{
+              menu.items.find((m) => m.id === li.id)?.price ?? "N/A"
+            }}
+            x{{ li.quantity }}
           </li>
         </ul>
+        <div class="mt-2 text-right text-green-700 font-bold">
+          Total: ₱{{
+            o.items.reduce((sum, item) => {
+              const price =
+                menu.items.find((m) => m.id === item.id)?.price ?? 0;
+              return sum + price * item.quantity;
+            }, 0)
+          }}
+        </div>
       </div>
     </div>
   </div>
