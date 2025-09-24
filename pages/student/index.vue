@@ -100,7 +100,9 @@ onMounted(() => menu.init());
         </div>
 
         <div class="p-4">
-          <h3 class="font-semibold text-gray-800 mb-2">{{ item.name }}</h3>
+          <h3 class="font-semibold text-gray-800 mb-2">
+            {{ item.name }}
+          </h3>
           <button
             class="w-full mt-3 px-4 py-3 rounded-lg bg-maroon text-white font-medium hover:bg-maroon/90 focus:ring-4 focus:ring-maroon/20 transition-all duration-200 flex items-center justify-center gap-2 group"
             @click="addToCartAndNotify(item)"
