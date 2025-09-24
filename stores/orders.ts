@@ -4,7 +4,7 @@ import type { CartItem } from './cart'
 import { v4 as uuidv4 } from 'uuid'
 import { useAuthStore } from './auth'
 
-export interface OrderItem { id: string; name: string; quantity: number }
+export interface OrderItem { id: string; name: string; quantity: number; price: number }
 export interface Order {
   id: string
   userId: string
@@ -63,12 +63,19 @@ export const useOrdersStore = defineStore('orders', {
       console.log('User email from Firebase:', $auth.currentUser?.email);
       console.log('Final email to use:', userEmail);
       
+      // Get menu store to access prices
+      const menuStore = useMenuStore ? useMenuStore() : null;
       const orderData = {
         userId: auth.lrnOrName,
         identifier: auth.lrnOrName, // Store the LRN/identifier separately
         email: userEmail, // Use actual Firebase Auth email
         slot,
-        items: items.map((i) => ({ id: i.id, name: i.name, quantity: i.quantity })),
+        items: items.map((i) => ({
+          id: i.id,
+          name: i.name,
+          quantity: i.quantity,
+          price: typeof i.price === 'number' ? i.price : (menuStore?.items.find(m => m.id === i.id)?.price ?? 0)
+        })),
         status: 'pending',
         claimCode,
         createdAt: Date.now(),

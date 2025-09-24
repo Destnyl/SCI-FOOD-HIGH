@@ -471,9 +471,7 @@ onMounted(async () => {
                 ></div>
                 <span class="font-medium text-gray-800">{{ item.name }}</span>
                 <span class="text-xs text-gray-500">
-                  ₱{{
-                    menu.items.find((m) => m.id === item.id)?.price ?? "N/A"
-                  }}
+                  ₱{{ item.price ?? "N/A" }}
                 </span>
               </div>
               <span class="text-sm text-gray-600"
@@ -500,8 +498,7 @@ onMounted(async () => {
               <span class="text-xl font-bold text-green-700">
                 ₱{{
                   o.items.reduce((sum, item) => {
-                    const price =
-                      menu.items.find((m) => m.id === item.id)?.price ?? 0;
+                    const price = item.price ?? 0;
                     return sum + price * item.quantity;
                   }, 0)
                 }}
