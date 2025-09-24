@@ -54,6 +54,31 @@ async function addItem() {
     isUploading.value = false;
   }
 }
+
+import { useNotification } from "~/composables/useNotification";
+
+const { success } = useNotification();
+const showConfirm = ref(false);
+const itemToDelete = ref<string | null>(null);
+
+function confirmDelete(id: string) {
+  itemToDelete.value = id;
+  showConfirm.value = true;
+}
+
+async function handleDelete() {
+  if (itemToDelete.value) {
+    await menu.removeItem(itemToDelete.value);
+    success("Menu item deleted", "The menu item was successfully removed.");
+    itemToDelete.value = null;
+    showConfirm.value = false;
+  }
+}
+
+function cancelDelete() {
+  itemToDelete.value = null;
+  showConfirm.value = false;
+}
 </script>
 
 <template>
@@ -184,10 +209,37 @@ async function addItem() {
         <div class="text-sm text-maroon/70">₱{{ item.price.toFixed(2) }}</div>
         <button
           class="mt-3 px-3 py-1 rounded bg-burnt text-white"
-          @click="menu.removeItem(item.id)"
+          @click="confirmDelete(item.id)"
         >
           Remove
         </button>
+      </div>
+    </div>
+
+    <!-- Confirmation Dialog -->
+    <div
+      v-if="showConfirm"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
+    >
+      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs">
+        <h4 class="font-semibold text-lg mb-2">Confirm Deletion</h4>
+        <p class="mb-4 text-sm text-gray-700">
+          Are you sure you want to delete this menu item?
+        </p>
+        <div class="flex justify-end gap-2">
+          <button
+            @click="cancelDelete"
+            class="px-4 py-2 rounded bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300"
+          >
+            Cancel
+          </button>
+          <button
+            @click="handleDelete"
+            class="px-4 py-2 rounded bg-burnt text-white font-semibold hover:bg-burnt/90"
+          >
+            Delete
+          </button>
+        </div>
       </div>
     </div>
   </div>
