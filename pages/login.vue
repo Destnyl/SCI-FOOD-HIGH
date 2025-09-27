@@ -121,13 +121,33 @@ async function login() {
       <label class="block text-sm font-semibold text-gray-700 mb-2"
         >LRN/Username</label
       >
-      <div class="relative">
-        <input
-          class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-maroon focus:ring-4 focus:ring-maroon/10 transition-all duration-200 outline-none"
-          v-model="identifier"
-          @input="debouncedCheckUser"
-          placeholder="Enter your LRN or Username"
-        />
+      <div>
+        <div class="relative">
+          <input
+            class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-maroon focus:ring-4 focus:ring-maroon/10 transition-all duration-200 outline-none"
+            v-model="identifier"
+            @input="debouncedCheckUser"
+            placeholder="Enter your LRN or Username"
+          />
+          <div
+            class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
+          >
+            <svg
+              class="h-5 w-5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+        </div>
         <div v-if="identifier && userType" class="mt-1 text-sm text-maroon">
           Logging in as: {{ userType === "student" ? "Student" : "Staff" }}
         </div>
@@ -159,23 +179,6 @@ async function login() {
               Staff
             </button>
           </div>
-        </div>
-        <div
-          class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
-        >
-          <svg
-            class="h-5 w-5 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            />
-          </svg>
         </div>
       </div>
     </div>
