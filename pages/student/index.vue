@@ -7,7 +7,7 @@ definePageMeta({
 const menu = useMenuStore();
 const cart = useCartStore();
 const { success } = useNotification();
-import { computed } from 'vue';
+import { computed } from "vue";
 
 function addToCartAndNotify(item: any) {
   if (item.available === false) {
@@ -49,9 +49,7 @@ onMounted(() => menu.init());
           ></path>
         </svg>
       </div>
-      <h3 class="text-lg font-semibold text-gray-700 mb-2">
-        No Menu Items
-      </h3>
+      <h3 class="text-lg font-semibold text-gray-700 mb-2">No Menu Items</h3>
       <p class="text-gray-500">
         Check back later for today's delicious offerings!
       </p>
@@ -103,10 +101,10 @@ onMounted(() => menu.init());
             <div
               :class="[
                 'backdrop-blur-sm rounded-full px-3 py-1 shadow-sm text-white text-sm font-medium',
-                item.available === false ? 'bg-red-500/90' : 'bg-green-600/90'
+                item.available === false ? 'bg-red-500/90' : 'bg-green-600/90',
               ]"
             >
-              {{ item.available === false ? 'Not Available' : 'Available' }}
+              {{ item.available === false ? "Not Available" : "Available" }}
             </div>
           </div>
         </div>
@@ -118,9 +116,9 @@ onMounted(() => menu.init());
           <button
             :class="[
               'w-full mt-3 px-4 py-3 rounded-lg font-medium focus:ring-4 transition-all duration-200 flex items-center justify-center gap-2 group',
-              item.available === false 
+              item.available === false
                 ? 'bg-gray-300 cursor-not-allowed text-gray-600'
-                : 'bg-maroon text-white hover:bg-maroon/90 focus:ring-maroon/20'
+                : 'bg-maroon text-white hover:bg-maroon/90 focus:ring-maroon/20',
             ]"
             @click="addToCartAndNotify(item)"
             :disabled="item.available === false"

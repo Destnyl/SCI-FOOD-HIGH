@@ -210,10 +210,16 @@ function cancelDelete() {
         <div class="flex items-center justify-between mt-3">
           <button
             class="flex items-center gap-2 px-3 py-1 rounded"
-            :class="item.available !== false ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 hover:bg-gray-500'"
+            :class="
+              item.available !== false
+                ? 'bg-green-600 hover:bg-green-700'
+                : 'bg-gray-400 hover:bg-gray-500'
+            "
             @click="menu.toggleAvailability(item.id)"
           >
-            <span class="text-white text-sm">{{ item.available !== false ? 'Available' : 'Not Available' }}</span>
+            <span class="text-white text-sm">{{
+              item.available !== false ? "Available" : "Not Available"
+            }}</span>
           </button>
           <button
             class="px-3 py-1 rounded bg-burnt text-white"
