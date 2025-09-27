@@ -31,11 +31,14 @@ export const useOrdersStore = defineStore('orders', {
   actions: {
     initStudent() {
       const auth = useAuthStore()
-      const { $db } = useNuxtApp()
-      console.log('Initializing student orders for user:', auth.lrnOrName);
+      const { $db, $auth } = useNuxtApp()
+      const currentEmail = $auth.currentUser?.email
+      console.log('Initializing student orders for user:', auth.lrnOrName, 'email:', currentEmail);
+
+      // Create a query that matches either userId or email field
       const q = query(
         collection($db, 'orders'),
-        where('userId', '==', auth.lrnOrName || ''),
+        where('email', '==', currentEmail || ''),
         orderBy('createdAt', 'desc'),
       )
       onSnapshot(q, (snap) => {
@@ -65,10 +68,13 @@ export const useOrdersStore = defineStore('orders', {
       
       // Get menu store to access prices
       const menuStore = useMenuStore ? useMenuStore() : null;
+      // Use email as userId if LRN is not available
+      const userId = auth.lrnOrName || userEmail;
+      
       const orderData = {
-        userId: auth.lrnOrName,
-        identifier: auth.lrnOrName, // Store the LRN/identifier separately
-        email: userEmail, // Use actual Firebase Auth email
+        userId: userId,
+        identifier: auth.lrnOrName || '', // Store the LRN if available
+        email: userEmail, // Always store the email
         slot,
         items: items.map((i) => ({
           id: i.id,
