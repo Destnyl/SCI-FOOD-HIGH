@@ -119,7 +119,7 @@ async function login() {
     </div>
     <div class="mb-4">
       <label class="block text-sm font-semibold text-gray-700 mb-2"
-        >Identifier</label
+        >LRN/Username</label
       >
       <div class="relative">
         <input
