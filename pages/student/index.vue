@@ -7,8 +7,12 @@ definePageMeta({
 const menu = useMenuStore();
 const cart = useCartStore();
 const { success } = useNotification();
+import { computed } from 'vue';
 
 function addToCartAndNotify(item: any) {
+  if (item.available === false) {
+    return;
+  }
   cart.addToCart(item);
   success("Added to cart", `${item.name} has been added to your cart.`);
 }
@@ -46,7 +50,7 @@ onMounted(() => menu.init());
         </svg>
       </div>
       <h3 class="text-lg font-semibold text-gray-700 mb-2">
-        No Menu Items Available
+        No Menu Items
       </h3>
       <p class="text-gray-500">
         Check back later for today's delicious offerings!
@@ -88,13 +92,21 @@ onMounted(() => menu.init());
               ></path>
             </svg>
           </div>
-          <div class="absolute top-3 right-3">
+          <div class="absolute top-3 right-3 flex flex-col gap-2">
             <div
               class="bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm"
             >
               <span class="text-sm font-bold text-maroon"
                 >₱{{ item.price.toFixed(2) }}</span
               >
+            </div>
+            <div
+              :class="[
+                'backdrop-blur-sm rounded-full px-3 py-1 shadow-sm text-white text-sm font-medium',
+                item.available === false ? 'bg-red-500/90' : 'bg-green-600/90'
+              ]"
+            >
+              {{ item.available === false ? 'Not Available' : 'Available' }}
             </div>
           </div>
         </div>
@@ -104,8 +116,14 @@ onMounted(() => menu.init());
             {{ item.name }}
           </h3>
           <button
-            class="w-full mt-3 px-4 py-3 rounded-lg bg-maroon text-white font-medium hover:bg-maroon/90 focus:ring-4 focus:ring-maroon/20 transition-all duration-200 flex items-center justify-center gap-2 group"
+            :class="[
+              'w-full mt-3 px-4 py-3 rounded-lg font-medium focus:ring-4 transition-all duration-200 flex items-center justify-center gap-2 group',
+              item.available === false 
+                ? 'bg-gray-300 cursor-not-allowed text-gray-600'
+                : 'bg-maroon text-white hover:bg-maroon/90 focus:ring-maroon/20'
+            ]"
             @click="addToCartAndNotify(item)"
+            :disabled="item.available === false"
           >
             <svg
               class="w-4 h-4 group-hover:scale-110 transition-transform"

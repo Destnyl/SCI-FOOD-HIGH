@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia'
-import { collection, onSnapshot, addDoc, deleteDoc, doc } from 'firebase/firestore'
+import { collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore'
 
 export interface MenuItem {
   id: string
   name: string
   price: number
   imageUrl?: string
+  available?: boolean
 }
 
 export const useMenuStore = defineStore('menu', {
@@ -48,6 +49,7 @@ export const useMenuStore = defineStore('menu', {
       const docData: any = {
         name: data.name,
         price: data.price,
+        available: true  // New items are available by default
       }
       if (imageUrl) docData.imageUrl = imageUrl
       await addDoc(collection($db, 'menu'), docData)
@@ -55,6 +57,16 @@ export const useMenuStore = defineStore('menu', {
     async removeItem(id: string) {
       const { $db } = useNuxtApp()
       await deleteDoc(doc($db, 'menu', id))
+    },
+    async toggleAvailability(id: string) {
+      const { $db } = useNuxtApp()
+      const menuRef = doc($db, 'menu', id)
+      const item = this.items.find(i => i.id === id)
+      if (item) {
+        await updateDoc(menuRef, {
+          available: !(item.available ?? true)  // If not set, treat as available
+        })
+      }
     },
   },
 })
