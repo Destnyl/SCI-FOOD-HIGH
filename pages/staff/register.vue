@@ -34,16 +34,31 @@ async function registerUser() {
 
   try {
     isLoading.value = true;
-    const { $auth } = useNuxtApp();
+    const { $auth, $db } = useNuxtApp();
 
     // Create email format for Firebase auth
     const email = `${identifier.value}@scifood.local`;
 
-    // Import createUserWithEmailAndPassword
+    // Import necessary Firebase functions
     const { createUserWithEmailAndPassword } = await import("firebase/auth");
+    const { collection, addDoc } = await import("firebase/firestore");
 
-    // Create user account
-    await createUserWithEmailAndPassword($auth, email, password.value);
+    // Create user account in Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(
+      $auth,
+      email,
+      password.value
+    );
+
+    // Create user document in Firestore
+    await addDoc(collection($db, "users"), {
+      uid: userCredential.user.uid,
+      email: email,
+      identifier: identifier.value,
+      userType: userType.value,
+      createdAt: Date.now(),
+      displayName: identifier.value,
+    });
 
     success(
       "User Registered!",

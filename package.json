@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@pinia/nuxt": "^0.5.5",
+    "@vueuse/core": "^13.9.0",
     "cloudinary": "^2.7.0",
     "dayjs": "^1.11.18",
     "firebase": "^12.2.1",

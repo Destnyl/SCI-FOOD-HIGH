@@ -43,14 +43,34 @@ export const useAuthStore = defineStore('auth', {
       
       // Initialize Firebase auth - ensure it's available
       try {
-        const { $auth } = useNuxtApp()
+        const { $auth, $db } = useNuxtApp()
         if ($auth) {
-          onAuthStateChanged($auth, (user) => {
+          onAuthStateChanged($auth, async (user) => {
             this.firebaseUser = user
             if (user) {
-              this.email = user.email
+              // Try to fetch user data from Firestore
+              const { collection, query, where, getDocs } = await import('firebase/firestore')
+              try {
+                const usersRef = collection($db, 'users')
+                const q = query(usersRef, where('uid', '==', user.uid))
+                const querySnapshot = await getDocs(q)
+                
+                if (!querySnapshot.empty) {
+                  const userData = querySnapshot.docs[0].data()
+                  this.userRole = userData.userType
+                  this.lrnOrName = userData.identifier
+                  this.email = userData.email
+                  this.displayName = userData.displayName
+                }
+              } catch (error) {
+                console.warn('Error fetching user data from Firestore:', error)
+                // Keep the data from localStorage if Firestore fetch fails
+              }
             } else {
               this.email = null
+              this.userRole = null
+              this.lrnOrName = null
+              this.displayName = null
             }
             this.isReady = true
           })
@@ -63,25 +83,77 @@ export const useAuthStore = defineStore('auth', {
         this.isReady = true
       }
     },
-    async loginWithCredentials(identifier: string, password: string, role: 'student' | 'staff') {
+    async checkUserType(identifier: string) {
+      const { $db } = useNuxtApp()
+      const { collection, query, where, getDocs } = await import('firebase/firestore')
+      const usersRef = collection($db, 'users')
+      const q = query(usersRef, where('identifier', '==', identifier))
+      const querySnapshot = await getDocs(q)
+
+      if (!querySnapshot.empty) {
+        const userData = querySnapshot.docs[0].data()
+        return userData.userType
+      }
+      return null
+    },
+
+    async loginWithCredentials(identifier: string, password: string, newUserType?: 'student' | 'staff' | null) {
+      // Check if user exists in Firestore to get their type
+      let userType = await this.checkUserType(identifier)
+      
+      // If user doesn't exist in Firestore but we have a new user type, use that
+      if (!userType && newUserType) {
+        userType = newUserType
+      }
+
       // For demo simplicity, we map identifier to email: <identifier>@scifood.local
       const email = `${identifier}@scifood.local`
-      const { $auth } = useNuxtApp()
+      const { $auth, $db } = useNuxtApp()
       console.log('Attempting login with email:', email);
+      
       const userCredential = await signInWithEmailAndPassword($auth, email, password)
       console.log('Login successful, user:', userCredential.user);
-      console.log('User email from credential:', userCredential.user.email);
-      this.userRole = role
-      this.lrnOrName = identifier
-      this.email = userCredential.user.email
-      console.log('Auth store email set to:', this.email);
-      this.displayName = identifier
+      
+      // Fetch user data from Firestore
+      const { collection, query, where, getDocs, setDoc, doc } = await import('firebase/firestore')
+      const usersRef = collection($db, 'users')
+      const q = query(usersRef, where('uid', '==', userCredential.user.uid))
+      const querySnapshot = await getDocs(q)
+      
+      if (!querySnapshot.empty) {
+        const userData = querySnapshot.docs[0].data()
+        this.userRole = userData.userType
+        this.lrnOrName = userData.identifier
+        this.email = userData.email
+        this.displayName = userData.displayName
+      } else {
+        // Create new user document in Firestore
+        const newUserData = {
+          uid: userCredential.user.uid,
+          identifier: identifier,
+          userType: userType,
+          email: email,
+          displayName: identifier,
+          createdAt: new Date().toISOString(),
+        }
+        
+        try {
+          await setDoc(doc(usersRef, userCredential.user.uid), newUserData)
+          this.userRole = userType
+          this.lrnOrName = identifier
+          this.email = email
+          this.displayName = identifier
+        } catch (error) {
+          console.error('Error creating user document:', error)
+          throw new Error('Failed to create user account')
+        }
+      }
       
       if (process.client) {
-        localStorage.setItem('sfh_role', role)
-        localStorage.setItem('sfh_identifier', identifier)
-        localStorage.setItem('sfh_displayName', identifier)
-        localStorage.setItem('sfh_email', email)
+        localStorage.setItem('sfh_role', this.userRole!)
+        localStorage.setItem('sfh_identifier', this.lrnOrName!)
+        localStorage.setItem('sfh_displayName', this.displayName!)
+        localStorage.setItem('sfh_email', this.email!)
       }
     },
     async logout() {

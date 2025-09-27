@@ -1,15 +1,37 @@
 <script setup lang="ts">
+import { useDebounceFn } from "@vueuse/core";
+
 // Set page title
 useHead({
   title: "Login - SCI-FOOD-HIGH",
 });
 
-const role = ref<"student" | "staff">("student");
 const identifier = ref("");
 const password = ref("");
+const userType = ref<"student" | "staff" | null>(null);
 
 const isLoading = ref(false);
 const errorMessage = ref("");
+
+// Debounced function to check user type
+const debouncedCheckUser = useDebounceFn(async () => {
+  if (identifier.value.length > 0) {
+    try {
+      userType.value = await auth.checkUserType(identifier.value);
+      showUserTypeSelection.value = !userType.value; // Show selection if user not found
+      if (userType.value) {
+        selectedUserType.value = null; // Reset selection if existing user found
+      }
+    } catch (err) {
+      userType.value = null;
+      showUserTypeSelection.value = true;
+    }
+  } else {
+    userType.value = null;
+    showUserTypeSelection.value = false;
+    selectedUserType.value = null;
+  }
+}, 500);
 
 const auth = useAuthStore();
 const route = useRoute();
@@ -27,36 +49,51 @@ watchEffect(() => {
   }
 });
 
+// For new user registration
+const showUserTypeSelection = ref(false);
+const selectedUserType = ref<"student" | "staff" | null>(null);
+
 async function login() {
   errorMessage.value = "";
   if (!identifier.value || !password.value) {
     errorMessage.value = "Please enter both identifier and password.";
     return;
   }
+
   try {
     isLoading.value = true;
+
+    // If it's a new user, ensure they've selected a type
+    if (showUserTypeSelection.value && !selectedUserType.value) {
+      errorMessage.value = "Please select your account type.";
+      return;
+    }
+
+    // Proceed with login
     await auth.loginWithCredentials(
       identifier.value,
       password.value,
-      role.value
+      selectedUserType.value // This will be null for existing users
     );
+
     const redirect =
       (route.query.redirect as string) ||
-      (role.value === "staff" ? "/staff" : "/student");
+      (auth.userRole === "staff" ? "/staff" : "/student");
     await navigateTo(redirect);
   } catch (err: any) {
     // Always show a user-friendly message for invalid credentials
-    if (
-      err.code === "auth/user-not-found" ||
+    if (err.message === "user-not-found") {
+      errorMessage.value = "User not found. Please check your identifier.";
+    } else if (
       err.code === "auth/wrong-password" ||
       err.code === "auth/invalid-credential"
     ) {
-      errorMessage.value =
-        role.value === "student"
-          ? "Invalid Reference Number or Password."
-          : "Invalid Staff Name or Password.";
+      errorMessage.value = "Invalid password. Please try again.";
     } else if (err.code === "auth/too-many-requests") {
       errorMessage.value = "Too many failed attempts. Please try again later.";
+    } else if (err.message === "User data not found in database") {
+      errorMessage.value =
+        "User account not properly set up. Please contact administrator.";
     } else {
       errorMessage.value = "Login failed. Please try again.";
     }
@@ -80,53 +117,49 @@ async function login() {
       </h2>
       <p class="text-sm text-gray-600 mt-1">Sign in to your account</p>
     </div>
-    <div class="mb-6">
-      <label class="block text-sm font-semibold text-gray-700 mb-2">Role</label>
-      <div class="flex gap-4">
-        <label
-          class="flex items-center gap-2 cursor-pointer p-3 rounded-lg border-2 transition-colors hover:bg-gray-50"
-          :class="
-            role === 'student'
-              ? 'border-maroon bg-maroon/5 text-maroon'
-              : 'border-gray-200'
-          "
-        >
-          <input
-            type="radio"
-            value="student"
-            v-model="role"
-            class="text-maroon focus:ring-maroon"
-          />
-          <span class="font-medium">Student</span>
-        </label>
-        <label
-          class="flex items-center gap-2 cursor-pointer p-3 rounded-lg border-2 transition-colors hover:bg-gray-50"
-          :class="
-            role === 'staff'
-              ? 'border-maroon bg-maroon/5 text-maroon'
-              : 'border-gray-200'
-          "
-        >
-          <input
-            type="radio"
-            value="staff"
-            v-model="role"
-            class="text-maroon focus:ring-maroon"
-          />
-          <span class="font-medium">Staff</span>
-        </label>
-      </div>
-    </div>
     <div class="mb-4">
-      <label class="block text-sm font-semibold text-gray-700 mb-2">{{
-        role === "student" ? "Learners Reference Number (LRN)" : "Username"
-      }}</label>
+      <label class="block text-sm font-semibold text-gray-700 mb-2"
+        >Identifier</label
+      >
       <div class="relative">
         <input
           class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-maroon focus:ring-4 focus:ring-maroon/10 transition-all duration-200 outline-none"
           v-model="identifier"
-          :placeholder="`Enter ${role === 'student' ? 'LRN' : 'Username'}`"
+          @input="debouncedCheckUser"
+          placeholder="Enter your LRN or Username"
         />
+        <div v-if="identifier && userType" class="mt-1 text-sm text-maroon">
+          Logging in as: {{ userType === "student" ? "Student" : "Staff" }}
+        </div>
+        <div v-else-if="identifier && showUserTypeSelection" class="mt-4">
+          <p class="text-sm text-gray-600 mb-2">
+            New user? Select your account type:
+          </p>
+          <div class="flex gap-4">
+            <button
+              @click="selectedUserType = 'student'"
+              :class="[
+                'px-4 py-2 rounded-lg border-2 transition-colors',
+                selectedUserType === 'student'
+                  ? 'border-maroon bg-maroon/5 text-maroon'
+                  : 'border-gray-200 hover:bg-gray-50',
+              ]"
+            >
+              Student
+            </button>
+            <button
+              @click="selectedUserType = 'staff'"
+              :class="[
+                'px-4 py-2 rounded-lg border-2 transition-colors',
+                selectedUserType === 'staff'
+                  ? 'border-maroon bg-maroon/5 text-maroon'
+                  : 'border-gray-200 hover:bg-gray-50',
+              ]"
+            >
+              Staff
+            </button>
+          </div>
+        </div>
         <div
           class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
         >
